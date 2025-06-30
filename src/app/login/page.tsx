@@ -80,6 +80,7 @@ export default function LoginForm() {
           <button
             type="submit"
             disabled={isLoading} // Disable during loading
+             onClick={() => router.push('/dashboard/customer')} 
             className={`bg-blue-600 text-white py-2 px-4 rounded w-full transition ${isLoading ? 'opacity-75 cursor-not-allowed' : 'hover:bg-blue-700'}`}
           >
             {isLoading ? 'Signing in...' : 'Sign in'}
