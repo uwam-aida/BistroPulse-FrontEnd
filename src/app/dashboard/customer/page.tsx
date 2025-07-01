@@ -3,44 +3,57 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, Plus, Download, ChevronDown, MoreHorizontal, ChevronLeft, ChevronRight, Upload, User } from 'lucide-react';
 
+// Add type definitions
+interface Restaurant {
+  id: number;
+  name: string;
+  representative: string;
+  location: string;
+  phone: string;
+  rating: number | null;
+  status: string;
+}
+
+interface CustomerForm {
+  name: string;
+  isStudent: boolean;
+  university: string;
+  email: string;
+  phone: string;
+  gender: string;
+  location: string;
+}
+
 export default function RestaurantManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState('');
-  const [selectedRating, setSelectedRating] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRestaurants, setSelectedRestaurants] = useState(new Set());
-  const [showAddCustomer, setShowAddCustomer] = useState(false);
-  const [customerForm, setCustomerForm] = useState({
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [showFilter, setShowFilter] = useState<boolean>(false);
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [selectedRating, setSelectedRating] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [selectedRestaurants, setSelectedRestaurants] = useState<Set<number>>(new Set());
+  const [showAddCustomer, setShowAddCustomer] = useState<boolean>(false);
+  const [customerForm, setCustomerForm] = useState<CustomerForm>({
     name: '',
     isStudent: false,
-    university: '', // ADD THIS LINE
+    university: '',
     email: '',
     phone: '',
     gender: 'male',
     location: ''
   });
 
-  // ADD THIS: List of universities
-  const universities = [
-'University of Rwanda',
-
-'African Leadership University',
-
-'University of Global Health Equity',
-
-'Kibogora Polytechnic',
-
-'Université Libre de Kigali',
-
-'University of Kigali',
-
-'INES Ruhengeri',
-
+  const universities: string[] = [
+    'University of Rwanda',
+    'African Leadership University',
+    'University of Global Health Equity',
+    'Kibogora Polytechnic',
+    'Université Libre de Kigali',
+    'University of Kigali',
+    'INES Ruhengeri',
   ];
 
-  const restaurants = [
+  const restaurants: Restaurant[] = [
     {
       id: 1,
       name: 'Sun valley restaurant',
@@ -112,7 +125,8 @@ export default function RestaurantManagement() {
 
   const totalPages = Math.ceil(filteredRestaurants.length / 10);
 
-  const handleSelectAll = (checked: boolean) => {
+  // Fixed function with explicit type annotations
+  const handleSelectAll = (checked: boolean): void => {
     if (checked) {
       setSelectedRestaurants(new Set(filteredRestaurants.map((r) => r.id)));
     } else {
@@ -120,7 +134,8 @@ export default function RestaurantManagement() {
     }
   };
 
-  const handleSelectRestaurant = (id: number, checked: boolean) => {
+  // Fixed function with explicit type annotations
+  const handleSelectRestaurant = (id: number, checked: boolean): void => {
     const newSelected = new Set(selectedRestaurants);
     if (checked) {
       newSelected.add(id);
@@ -130,13 +145,13 @@ export default function RestaurantManagement() {
     setSelectedRestaurants(newSelected);
   };
 
-  const clearFilters = () => {
+  const clearFilters = (): void => {
     setSelectedLocation('');
     setSelectedRating('');
     setSelectedStatus('');
   };
 
-  const applyFilters = () => {
+  const applyFilters = (): void => {
     setShowFilter(false);
   };
 
@@ -158,14 +173,14 @@ export default function RestaurantManagement() {
               placeholder="Search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 placeholder-gray-400"
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 placeholder-gray-500"
             />
           </div>
           
           {/* Filter Button */}
           <button
             onClick={() => setShowFilter(!showFilter)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-400"
           >
             <Filter className="w-4 h-4" />
             Filter
@@ -202,7 +217,7 @@ export default function RestaurantManagement() {
                 onChange={(e) => setSelectedLocation(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Category</option>
+                <option value="" className="text-gray-500">Select Category</option>
                 <option value="Accra">Accra</option>
                 <option value="Audiotube">Audiotube</option>
                 <option value="Afatastie">Afatastie</option>
@@ -216,7 +231,7 @@ export default function RestaurantManagement() {
                 onChange={(e) => setSelectedRating(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Category</option>
+                <option value="" className="text-gray-500">Select Category</option>
                 <option value="4+">4+ Stars</option>
                 <option value="3+">3+ Stars</option>
               </select>
@@ -229,7 +244,7 @@ export default function RestaurantManagement() {
                 onChange={(e) => setSelectedStatus(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select Status</option>
+                <option value="" className="text-gray-500">Select Status</option>
                 <option value="active">Active</option>
                 <option value="closed">Closed</option>
               </select>
@@ -245,7 +260,7 @@ export default function RestaurantManagement() {
             </button>
             <button
               onClick={applyFilters}
-              className="flex-1 px-4 py-2 bg-blue-600 text-gray-400 rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               Apply Filter
             </button>
@@ -280,7 +295,7 @@ export default function RestaurantManagement() {
             </thead>
             <tbody>
               {filteredRestaurants.map((restaurant) => (
-                <tr key={restaurant.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={restaurant.id} className="border-b border-gray-300 hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <input
                       type="checkbox"
@@ -396,7 +411,7 @@ export default function RestaurantManagement() {
                     placeholder="Chelsie Jhonson"
                     value={customerForm.name}
                     onChange={(e) => setCustomerForm({...customerForm, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-gray-700"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-700"
                   />
                   <div className="flex items-center mt-2">
                     <input
@@ -410,7 +425,6 @@ export default function RestaurantManagement() {
                   </div>
                 </div>
 
-                {/* REPLACE THE EXISTING NAME SECTION ABOVE WITH THIS UPDATED VERSION */}
                 {/* University Dropdown - Only show when isStudent is true */}
                 {customerForm.isStudent && (
                   <div>
@@ -420,7 +434,7 @@ export default function RestaurantManagement() {
                       onChange={(e) => setCustomerForm({...customerForm, university: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                     >
-                      <option value="" className="text-gray-400">Select university</option>
+                      <option value="" className="text-gray-500">Select university</option>
                       {universities.map((uni) => (
                         <option key={uni} value={uni} className="text-gray-700">
                           {uni}
@@ -439,7 +453,7 @@ export default function RestaurantManagement() {
                       placeholder="example@bindiriqu.com"
                       value={customerForm.email}
                       onChange={(e) => setCustomerForm({...customerForm, email: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-gray-700"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-700"
                     />
                   </div>
                   <div>
@@ -449,7 +463,7 @@ export default function RestaurantManagement() {
                       placeholder="(+233) 01532548623"
                       value={customerForm.phone}
                       onChange={(e) => setCustomerForm({...customerForm, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 text-gray-700"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-700"
                     />
                   </div>
                 </div>
@@ -491,7 +505,7 @@ export default function RestaurantManagement() {
                     value={customerForm.location}
                     onChange={(e) => setCustomerForm({...customerForm, location: e.target.value})}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none placeholder-gray-400 text-gray-700"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none placeholder-gray-500 text-gray-700"
                   />
                 </div>
               </div>
@@ -513,7 +527,7 @@ export default function RestaurantManagement() {
                     setCustomerForm({
                       name: '',
                       isStudent: false,
-                      university: '', // ADD THIS LINE TO RESET
+                      university: '',
                       email: '',
                       phone: '',
                       gender: 'male',
