@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Search, Filter, Plus, Download, ChevronDown, MoreHorizontal, ChevronLeft, ChevronRight, Upload, User } from 'lucide-react';
+import { Search, Filter, Plus, Download, MoreHorizontal, ChevronLeft, ChevronRight, User } from 'lucide-react';
 
 // Add type definitions
 interface Restaurant {
@@ -42,6 +42,8 @@ export default function RestaurantManagement() {
     gender: 'male',
     location: ''
   });
+  const [showCustomerProfile, setShowCustomerProfile] = useState<boolean>(false);
+  const [newCustomer, setNewCustomer] = useState<CustomerForm | null>(null);
 
   const universities: string[] = [
     'University of Rwanda',
@@ -54,60 +56,11 @@ export default function RestaurantManagement() {
   ];
 
   const restaurants: Restaurant[] = [
-    {
-      id: 1,
-      name: 'Sun valley restaurant',
-      representative: 'Daniel Steward',
-      location: 'Audiotube',
-      phone: '(408) 555-0120',
-      rating: null,
-      status: 'active'
-    },
-    {
-      id: 2,
-      name: 'Moon valley restaurant',
-      representative: 'Daniel Steward',
-      location: 'Afatastie Nettey Road, Accra',
-      phone: '(480) 555-0103',
-      rating: null,
-      status: 'active'
-    },
-    {
-      id: 3,
-      name: 'Sun valley restaurant',
-      representative: 'Daniel Steward',
-      location: 'Audiotube',
-      phone: '(603) 555-0123',
-      rating: null,
-      status: 'active'
-    },
-    {
-      id: 4,
-      name: 'Moon valley restaurant',
-      representative: 'Daniel Steward',
-      location: 'Nettey Road, Accra',
-      phone: '(704) 555-0127',
-      rating: null,
-      status: 'active'
-    },
-    {
-      id: 5,
-      name: 'Sun valley restaurant',
-      representative: 'Daniel Steward',
-      location: 'Afatastie',
-      phone: '(239) 555-0108',
-      rating: null,
-      status: 'active'
-    },
-    {
-      id: 6,
-      name: 'Star valley restaurant',
-      representative: 'Daniel Steward',
-      location: 'Afatastie Nettey Road, Accra',
-      phone: '(239) 555-0108',
-      rating: 4.8,
-      status: 'closed'
-    }
+    { id: 1, name: 'Pizza Palace', representative: 'John Doe', location: 'Kigali', phone: '+250788123456', rating: 4.5, status: 'Active' },
+    { id: 2, name: 'Burger House', representative: 'Jane Smith', location: 'Butare', phone: '+250788654321', rating: 4.2, status: 'Active' },
+    { id: 3, name: 'Sushi Bar', representative: 'Mike Johnson', location: 'Kigali', phone: '+250788987654', rating: null, status: 'Inactive' },
+    { id: 4, name: 'Coffee Shop', representative: 'Sarah Wilson', location: 'Gisenyi', phone: '+250788456789', rating: 4.8, status: 'Active' },
+    { id: 5, name: 'Taco Stand', representative: 'Carlos Rodriguez', location: 'Kigali', phone: '+250788321654', rating: 4.0, status: 'Active' },
   ];
 
   const filteredRestaurants = useMemo(() => {
@@ -115,17 +68,17 @@ export default function RestaurantManagement() {
       const matchesSearch = restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            restaurant.representative.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            restaurant.location.toLowerCase().includes(searchTerm.toLowerCase());
-      
       const matchesLocation = !selectedLocation || restaurant.location.includes(selectedLocation);
       const matchesStatus = !selectedStatus || restaurant.status === selectedStatus;
-      
       return matchesSearch && matchesLocation && matchesStatus;
     });
-  }, [searchTerm, selectedLocation, selectedStatus]);
+  }, [searchTerm, selectedLocation, selectedStatus, restaurants]);
 
   const totalPages = Math.ceil(filteredRestaurants.length / 10);
+  const startIndex = (currentPage - 1) * 10;
+  const endIndex = Math.min(startIndex + 10, filteredRestaurants.length);
+  const currentRestaurants = filteredRestaurants.slice(startIndex, endIndex);
 
-  // Fixed function with explicit type annotations
   const handleSelectAll = (checked: boolean): void => {
     if (checked) {
       setSelectedRestaurants(new Set(filteredRestaurants.map((r) => r.id)));
@@ -134,7 +87,6 @@ export default function RestaurantManagement() {
     }
   };
 
-  // Fixed function with explicit type annotations
   const handleSelectRestaurant = (id: number, checked: boolean): void => {
     const newSelected = new Set(selectedRestaurants);
     if (checked) {
@@ -155,114 +107,126 @@ export default function RestaurantManagement() {
     setShowFilter(false);
   };
 
+  const handleAddCustomer = (): void => {
+    setNewCustomer({ ...customerForm });
+    setShowAddCustomer(false);
+    setShowCustomerProfile(true);
+    // Reset form
+    setCustomerForm({
+      name: '',
+      isStudent: false,
+      university: '',
+      email: '',
+      phone: '',
+      gender: 'male',
+      location: ''
+    });
+  };
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200">
         <div className="flex items-center gap-4">
-          <div className="w-1 h-6 bg-blue-500 rounded"></div>
-          <h1 className="text-xl font-semibold text-gray-900">Restaurants</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Restaurant Management</h1>
+          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            {filteredRestaurants.length} restaurants
+          </span>
         </div>
-        
         <div className="flex items-center gap-3">
-          {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-700 w-4 h-4" />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Search restaurants..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-64 placeholder-gray-500"
+              className="pl-10 pr-4 py-2 border  border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             />
           </div>
-          
-          {/* Filter Button */}
           <button
             onClick={() => setShowFilter(!showFilter)}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-400"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-900"
           >
-            <Filter className="w-4 h-4" />
+            <Filter className="w-4 h-4 text-gray-900" />
             Filter
           </button>
-          
-          {/* Add Restaurant Button */}
-          <button 
+          <button
             onClick={() => setShowAddCustomer(true)}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Add Restaurant
+            <Plus className="w-4 h-4 text-gray-900" />
+            Add Customer
           </button>
-          
-          {/* Export Button */}
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Download className="w-4 h-4" />
+          <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-50 transition-colors">
+            <Download className="w-4 h-4 text-gray-900" />
             Export
-            <ChevronDown className="w-4 h-4" />
           </button>
+
         </div>
       </div>
 
       {/* Filter Panel */}
       {showFilter && (
         <div className="absolute right-6 top-20 bg-white border border-gray-200 rounded-lg shadow-lg p-4 w-64 z-10">
-          <h3 className="font-semibold mb-4">Filter</h3>
+          <h3 className="font-semibold text-gray-900 mb-3">Filter Options</h3>
           
-          <div className="space-y-4">
+          <div className="space-y-4 text-gray-500">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border placeholder-text-gray-300 border-gray-300 rounded-lg px-3 py-2 text-sm"
               >
-                <option value="" className="text-gray-500">Select Category</option>
-                <option value="Accra">Accra</option>
-                <option value="Audiotube">Audiotube</option>
-                <option value="Afatastie">Afatastie</option>
+                <option value="">All Locations</option>
+                <option value="Kigali">Kigali</option>
+                <option value="Butare">Butare</option>
+                <option value="Gisenyi">Gisenyi</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
-              <select
+              <label className="block text-sm font-medium placeholder-text-gray-300 text-gray-700 mb-1">Rating</label>
+              <select 
                 value={selectedRating}
                 onChange={(e) => setSelectedRating(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm placeholder-gray-600"
               >
-                <option value="" className="text-gray-500">Select Category</option>
+                
+                <option value="">All Ratings</option>
                 <option value="4+">4+ Stars</option>
                 <option value="3+">3+ Stars</option>
+                <option value="2+">2+ Stars</option>
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm placeholder-gray-600"
               >
-                <option value="" className="text-gray-500">Select Status</option>
-                <option value="active">Active</option>
-                <option value="closed">Closed</option>
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
               </select>
             </div>
           </div>
-          
-          <div className="flex gap-2 mt-6">
+
+          <div className="flex gap-2 mt-4">
             <button
               onClick={clearFilters}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition-colors text-gray-800"
             >
-              Clear Filter
+              Clear
             </button>
             <button
               onClick={applyFilters}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex-1 px-3 py-2 bg-blue-600  text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
             >
-              Apply Filter
+              Apply
             </button>
           </div>
         </div>
@@ -271,64 +235,59 @@ export default function RestaurantManagement() {
       {/* Table */}
       <div className="p-6">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 w-12">
+                <th className="text-left py-3 px-4">
                   <input
                     type="checkbox"
                     checked={selectedRestaurants.size === filteredRestaurants.length && filteredRestaurants.length > 0}
                     onChange={(e) => handleSelectAll(e.target.checked)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300"
                   />
                 </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                  Name <span className="text-gray-400">↕</span>
-                </th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Representative</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Location</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Phone Number</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Rating</th>
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Status</th>
-                <th className="w-12"></th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Restaurant Name</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Representative</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Location</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Phone</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Rating</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-900">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredRestaurants.map((restaurant) => (
-                <tr key={restaurant.id} className="border-b border-gray-300 hover:bg-gray-50">
+              {currentRestaurants.map((restaurant) => (
+                <tr key={restaurant.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <input
                       type="checkbox"
                       checked={selectedRestaurants.has(restaurant.id)}
                       onChange={(e) => handleSelectRestaurant(restaurant.id, e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300"
                     />
                   </td>
-                  <td className="py-3 px-4 text-sm text-gray-900">{restaurant.name}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{restaurant.representative}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{restaurant.location}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">{restaurant.phone}</td>
-                  <td className="py-3 px-4 text-sm text-gray-600">
+                  <td className="py-3 px-4 font-medium text-gray-900">{restaurant.name}</td>
+                  <td className="py-3 px-4 text-gray-700">{restaurant.representative}</td>
+                  <td className="py-3 px-4 text-gray-700">{restaurant.location}</td>
+                  <td className="py-3 px-4 text-gray-700">{restaurant.phone}</td>
+                  <td className="py-3 px-4">
                     {restaurant.rating ? (
-                      <div className="flex items-center gap-1">
-                        <span className="text-yellow-500">★</span>
-                        <span>{restaurant.rating}</span>
-                      </div>
+                      <span className="text-yellow-600">★ {restaurant.rating}</span>
                     ) : (
-                      '-'
+                      <span className="text-gray-400">No rating</span>
                     )}
                   </td>
                   <td className="py-3 px-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      restaurant.status === 'active' 
+                      restaurant.status === 'Active' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {restaurant.status === 'active' ? 'Active' : 'Closed'}
+                      {restaurant.status}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <button className="text-gray-400 hover:text-gray-600">
+                    <button className="text-gray-400 hover:text-gray-600 transition-colors">
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
                   </td>
@@ -341,24 +300,24 @@ export default function RestaurantManagement() {
         {/* Pagination */}
         <div className="flex items-center justify-between mt-6">
           <div className="text-sm text-gray-700">
-            1 of {totalPages}
+            Showing {startIndex + 1} to {endIndex} of {filteredRestaurants.length} results
           </div>
-          
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-4 h-4" />
+              Previous
             </button>
             
-            <div className="flex gap-1">
-              {[1, 2, 3].map((page) => (
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 rounded-lg text-sm ${
+                  className={`px-3 py-2 rounded-lg text-sm transition-colors ${
                     currentPage === page
                       ? 'bg-blue-600 text-white'
                       : 'border border-gray-300 hover:bg-gray-50'
@@ -368,177 +327,156 @@ export default function RestaurantManagement() {
                 </button>
               ))}
             </div>
-            
+
             <button
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
+              Next
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Add Customer Modal */}
-        {showAddCustomer && (
+        {/* Add Customer Modal or Customer Profile */}
+        {(showAddCustomer || showCustomerProfile) && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
-              <h2 className="text-xl font-semibold mb-6 text-gray-700">Add Customer</h2>
-              
-              {/* Profile Picture Upload */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-gray-400" />
-                </div>
-                <div className="flex gap-2">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                    <Upload className="w-4 h-4" />
-                    Upload new picture
-                  </button>
-                  <button className="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm">
-                    Remove
-                  </button>
-                </div>
-              </div>
-
-              {/* Form Fields */}
-              <div className="space-y-4">
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    placeholder="Chelsie Jhonson"
-                    value={customerForm.name}
-                    onChange={(e) => setCustomerForm({...customerForm, name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-700"
-                  />
-                  <div className="flex items-center mt-2">
-                    <input
-                      type="checkbox"
-                      id="student"
-                      checked={customerForm.isStudent}
-                      onChange={(e) => setCustomerForm({...customerForm, isStudent: e.target.checked})}
-                      className="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <label htmlFor="student" className="text-sm text-gray-700">University student</label>
+              {showCustomerProfile && newCustomer ? (
+                <>
+                  <h2 className="text-xl font-semibold mb-6 text-gray-900">Customer Profile</h2>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
+                        <User className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-medium">{newCustomer.name}</h3>
+                        <p className="text-sm text-gray-600">{newCustomer.email}</p>
+                      </div>
+                    </div>
+                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Active</span>
                   </div>
-                </div>
+                  <div className="mt-4 space-y-2 text-gray-500">
+                    <p><strong>Phone Number:</strong> {newCustomer.phone}</p>
+                    <p><strong>University:</strong> {newCustomer.isStudent ? newCustomer.university : 'N/A'}</p>
+                    <p><strong>Location:</strong> {newCustomer.location}</p>
+                  </div>
+                  <button
+                    onClick={() => setShowCustomerProfile(false)}
+                    className="mt-6 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Close
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-semibold mb-6 text-gray-700">Add Customer</h2>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                      <input
+                        type="text"
+                        value={customerForm.name}
+                        onChange={(e) => setCustomerForm({...customerForm, name: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="Enter customer name"
+                      />
+                    </div>
 
-                {/* University Dropdown - Only show when isStudent is true */}
-                {customerForm.isStudent && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Choose university</label>
-                    <select
-                      value={customerForm.university}
-                      onChange={(e) => setCustomerForm({...customerForm, university: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <input
+                        type="email"
+                        value={customerForm.email}
+                        onChange={(e) => setCustomerForm({...customerForm, email: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="Enter email address"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <input
+                        type="tel"
+                        value={customerForm.phone}
+                        onChange={(e) => setCustomerForm({...customerForm, phone: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={customerForm.isStudent}
+                          onChange={(e) => setCustomerForm({...customerForm, isStudent: e.target.checked})}
+                          className="rounded border-gray-300"
+                        />
+                        <span className="text-sm font-medium text-gray-700">Student</span>
+                      </label>
+                    </div>
+
+                    {customerForm.isStudent && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">University</label>
+                        <select
+                          value={customerForm.university}
+                          onChange={(e) => setCustomerForm({...customerForm, university: e.target.value})}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                        >
+                          <option value="">Select University</option>
+                          {universities.map((uni) => (
+                            <option key={uni} value={uni}>{uni}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                      <select
+                        value={customerForm.gender}
+                        onChange={(e) => setCustomerForm({...customerForm, gender: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      >
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                      <input
+                        type="text"
+                        value={customerForm.location}
+                        onChange={(e) => setCustomerForm({...customerForm, location: e.target.value})}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                        placeholder="Enter location"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={() => setShowAddCustomer(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
                     >
-                      <option value="" className="text-gray-500">Select university</option>
-                      {universities.map((uni) => (
-                        <option key={uni} value={uni} className="text-gray-700">
-                          {uni}
-                        </option>
-                      ))}
-                    </select>
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddCustomer}
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Add Customer
+                    </button>
                   </div>
-                )}
-
-                {/* Email and Phone */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input
-                      type="email"
-                      placeholder="example@bindiriqu.com"
-                      value={customerForm.email}
-                      onChange={(e) => setCustomerForm({...customerForm, email: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-700"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                    <input
-                      type="tel"
-                      placeholder="(+233) 01532548623"
-                      value={customerForm.phone}
-                      onChange={(e) => setCustomerForm({...customerForm, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-700"
-                    />
-                  </div>
-                </div>
-
-                {/* Gender */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="male"
-                        checked={customerForm.gender === 'male'}
-                        onChange={(e) => setCustomerForm({...customerForm, gender: e.target.value})}
-                        className="mr-2 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">Male</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value="female"
-                        checked={customerForm.gender === 'female'}
-                        onChange={(e) => setCustomerForm({...customerForm, gender: e.target.value})}
-                        className="mr-2 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">Female</span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Location */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-                  <textarea
-                    placeholder="G. P. O., Asafoatse Nettey Road, Accra..."
-                    value={customerForm.location}
-                    onChange={(e) => setCustomerForm({...customerForm, location: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none placeholder-gray-500 text-gray-700"
-                  />
-                </div>
-              </div>
-
-              {/* Modal Actions */}
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => setShowAddCustomer(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    // Handle form submission here
-                    console.log('Customer form:', customerForm);
-                    setShowAddCustomer(false);
-                    // Reset form
-                    setCustomerForm({
-                      name: '',
-                      isStudent: false,
-                      university: '',
-                      email: '',
-                      phone: '',
-                      gender: 'male',
-                      location: ''
-                    });
-                  }}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Add Customer
-                </button>
-              </div>
+                </>
+              )}
             </div>
           </div>
         )}
